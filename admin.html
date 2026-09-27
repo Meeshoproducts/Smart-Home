@@ -154,7 +154,8 @@ input,button,select{
 
 </div>
 
-async function addProduct(){
+<script>
+  async function addProduct(){
 
   const product = {
     name: document.getElementById("pName").value.trim(),
@@ -255,8 +256,8 @@ async function loadProducts(){
 
   });
 
-}
-<script>
+  }
+  
 
 const SUPABASE_URL = "https://uqlyjoxfisbxqfbaootw.supabase.co";
 
@@ -514,6 +515,6 @@ function escapeHTML(value){
 }
 
 </script>
-
+  
 </body>
 </html>
