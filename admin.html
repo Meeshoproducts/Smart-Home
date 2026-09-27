@@ -104,7 +104,45 @@ input,button,select{
     <h2>Smart Home Admin</h2>
     <button class="logout" onclick="logout()">Logout</button>
   </div>
+<div class="container">
 
+  <h2>🛍️ Product Management</h2>
+
+  <div class="order">
+
+    <input id="pName" placeholder="Product Name">
+
+    <input id="pPrice" type="number" placeholder="Price">
+
+    <input id="pMrp" type="number" placeholder="MRP">
+
+    <input id="pRating" placeholder="Rating (e.g. 4.5)">
+
+    <input id="pCategory" placeholder="Category (electronics/fashion)">
+
+    <input id="pSeller" placeholder="Seller">
+
+    <input id="pImage" placeholder="Product Image URL">
+
+    <input id="pDescription" placeholder="Product Description">
+
+    <input id="pColor" placeholder="Color">
+
+    <input id="pBrand" placeholder="Brand">
+
+    <button
+      class="login-btn"
+      onclick="addProduct()">
+      ➕ Add Product
+    </button>
+
+  </div>
+
+  <div id="productsAdmin">
+    <div class="loading">Loading products...</div>
+  </div>
+
+</div>
   <div class="container">
     <h2>📦 All Orders</h2>
 
@@ -115,7 +153,108 @@ input,button,select{
 
 </div>
 
+async function addProduct(){
 
+  const product = {
+    name: document.getElementById("pName").value.trim(),
+    price: Number(document.getElementById("pPrice").value),
+    mrp: Number(document.getElementById("pMrp").value),
+    rating: document.getElementById("pRating").value.trim() || "4.0",
+    category: document.getElementById("pCategory").value.trim(),
+    seller: document.getElementById("pSeller").value.trim(),
+    image: document.getElementById("pImage").value.trim(),
+    description: document.getElementById("pDescription").value.trim(),
+    highlights: {
+      Brand: document.getElementById("pBrand").value.trim(),
+      Color: document.getElementById("pColor").value.trim()
+    }
+  };
+
+  if(!product.name || !product.price || !product.mrp || !product.image){
+    alert("Product Name, Price, MRP aur Image URL bharna zaroori hai.");
+    return;
+  }
+
+  const {error} = await supabaseClient
+    .from("products")
+    .insert(product);
+
+  if(error){
+    alert("Product add nahi hua:\n" + error.message);
+    return;
+  }
+
+  alert("Product successfully added ✅");
+
+  document.getElementById("pName").value="";
+  document.getElementById("pPrice").value="";
+  document.getElementById("pMrp").value="";
+  document.getElementById("pRating").value="";
+  document.getElementById("pCategory").value="";
+  document.getElementById("pSeller").value="";
+  document.getElementById("pImage").value="";
+  document.getElementById("pDescription").value="";
+  document.getElementById("pColor").value="";
+  document.getElementById("pBrand").value="";
+
+  loadProducts();
+}
+
+
+async function loadProducts(){
+
+  const box=document.getElementById("productsAdmin");
+
+  const {data,error}=await supabaseClient
+    .from("products")
+    .select("*")
+    .order("created_at",{ascending:false});
+
+  if(error){
+    box.innerHTML="<p>Products load nahi hue: "+escapeHTML(error.message)+"</p>";
+    return;
+  }
+
+  if(!data || !data.length){
+    box.innerHTML="<div class='loading'>🛍️ No products yet.</div>";
+    return;
+  }
+
+  box.innerHTML="";
+
+  data.forEach(p=>{
+
+    const div=document.createElement("div");
+
+    div.className="order";
+
+    div.innerHTML=`
+      <h3>${escapeHTML(p.name)}</h3>
+
+      <img
+        src="${escapeHTML(p.image || "")}"
+        style="width:100%;max-width:180px;border-radius:10px;">
+
+      <p>
+        <b>Price:</b> ₹${p.price}
+        &nbsp; | &nbsp;
+        <b>MRP:</b> ₹${p.mrp}
+      </p>
+
+      <p>
+        <b>Category:</b> ${escapeHTML(p.category || "-")}
+      </p>
+
+      <p>
+        ${escapeHTML(p.description || "")}
+      </p>
+    `;
+
+    box.appendChild(div);
+
+  });
+
+}
 <script>
 
 const SUPABASE_URL = "https://uqlyjoxfisbxqfbaootw.supabase.co";
@@ -335,6 +474,7 @@ async function updateStatus(id,newStatus){
     );
 
     loadOrders();
+loadProducts();
     return;
   }
 
